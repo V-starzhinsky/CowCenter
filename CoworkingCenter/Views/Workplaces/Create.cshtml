@@ -1,0 +1,182 @@
+@model CoworkingCenter.Models.Workplace
+
+<h2 class="text-dark fw-bold">➕ Создание и мгновенное бронирование места</h2>
+<hr />
+<!-- БЛОК ВЫВОДА КРАСНЫХ ОШИБОК ДВОЙНОГО БРОНИРОВАНИЯ (Добавьте если отсутствует): -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger py-2 fw-bold shadow-sm">
+        @Html.ValidationSummary(true)
+    </div>
+}
+
+
+<div class="card p-4 bg-white border-0 shadow-sm rounded-3 col-md-8 mb-5">
+    <form action="/Workplaces/Create" method="post" id="workplaceForm">
+        
+        <h4 class="text-primary mb-3">1. Параметры физического места</h4>
+        
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Тип рабочего места</label>
+            <select name="Type" id="workplaceType" class="form-control" required>
+                <option value="Фикс">Фиксированное место (Фикс)</option>
+                <option value="Флекс">Свободное место (Флекс)</option>
+                <option value="Офис">Отдельный кабинет (Офис)</option>
+            </select>
+        </div>
+
+        <div class="mb-3" id="numberSelectionBlock">
+            <label class="form-label fw-semibold" id="numberLabel">Номер стола</label>
+            <select name="TableNumber" id="tableNumberSelect" class="form-control"></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Комплектация / Оснащение</label>
+            <select name="Equipment" id="workplaceEquipment" class="form-control" required>
+                <option value="Базовое (Стол, Стул, Розетка, Wi-Fi)" data-extra="0">Базовое (Стол, Стул, Розетка, Wi-Fi) [+0 BYN]</option>
+                <option value="Стандарт (Монитор 24', Мышь, Клавиатура)" data-extra="2">Стандарт (Монитор 24", Мышь, Клавиатура) [+2 BYN/ч]</option>
+                <option value="Бизнес (Два монитора 27', ИБП, Эргономичное кресло)" data-extra="5">Бизнес (Два монитора 27", ИБП, Кресло) [+5 BYN/ч]</option>
+                <option value="Максимум (ПК Core i7, Монитор 34', Графический планшет)" data-extra="10">Максимум (Игровой ПК, Монитор 34") [+10 BYN/ч]</option>
+            </select>
+        </div>
+
+        <hr class="my-4" />
+        <h4 class="text-primary mb-3">2. Информация о клиенте и времени</h4>
+
+        <!-- Переключатель типа клиента -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Категория посетителя</label>
+            <select name="residentSelectionType" id="residentSelectionType" class="form-control" required>
+                <option value="1">Постоянный резидент (выбрать из существующей базы)</option>
+                <option value="2">Частное лицо / Разовый визит</option>
+            </select>
+        </div>
+
+        <!-- Блок для Постоянного резидента -->
+        <div class="mb-3" id="existingResidentBlock">
+            <label class="form-label fw-semibold">Выберите резидента из базы</label>
+            <select name="residentId" class="form-control">
+                @if (ViewBag.Residents != null)
+                {
+                    @foreach (var res in ViewBag.Residents)
+                    {
+                        <option value="@res.Id">@res.Name </option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- Блок для Разового лица -->
+        <div class="mb-3" id="temporaryResidentBlock" style="display: none;">
+            <label class="form-label fw-semibold">ФИО частного лица (Разовый клиент)</label>
+            <input name="temporaryName" class="form-control" placeholder="Иванов Сидор Петрович" />
+        </div>
+
+        <!-- Выбор Даты и Времени бронирования -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Дата аренды</label>
+                <input name="date" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Время начала</label>
+                <input name="startTime" type="time" class="form-control" value="09:00" required />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Время окончания</label>
+                <input name="endTime" type="time" class="form-control" value="18:00" required />
+            </div>
+        </div>
+
+        <!-- Автоматическая цена -->
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Стоимость аренды</label>
+            <input type="hidden" name="Price" id="finalPriceHidden" value="10" />
+            <div class="alert alert-info py-2 fw-bold" id="priceDisplay" style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;"></div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success px-5 btn-lg">Проверить и забронировать</button>
+            <a href="/Workplaces" class="btn btn-secondary px-4 btn-lg">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const typeSelect = document.getElementById('workplaceType');
+    const blockNumber = document.getElementById('numberSelectionBlock');
+    const labelNumber = document.getElementById('numberLabel');
+    const selectNumber = document.getElementById('tableNumberSelect');
+    
+    const equipSelect = document.getElementById('workplaceEquipment');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const priceHidden = document.getElementById('finalPriceHidden');
+
+    const resTypeSelect = document.getElementById('residentSelectionType');
+    const existingBlock = document.getElementById('existingResidentBlock');
+    const tempBlock = document.getElementById('temporaryResidentBlock');
+
+    // Логика переключения между Постоянным клиентом и Разовым
+    resTypeSelect.addEventListener('change', function() {
+        if (resTypeSelect.value === '1') {
+            existingBlock.style.display = 'block';
+            tempBlock.style.display = 'none';
+        } else {
+            existingBlock.style.display = 'none';
+            tempBlock.style.display = 'block';
+        }
+    });
+
+    function updateNumbersAndVisibility() {
+        const selectedType = typeSelect.value;
+        selectNumber.innerHTML = "";
+
+        if (selectedType === 'Флекс') {
+            blockNumber.style.display = 'none';
+            const option = document.createElement('option');
+            option.value = "Любой свободный стол";
+            option.text = "Любой свободный стол";
+            selectNumber.appendChild(option);
+        } 
+        else if (selectedType === 'Офис') {
+            blockNumber.style.display = 'block';
+            labelNumber.innerText = "Номер кабинета";
+            for (let i = 1; i <= 8; i++) {
+                const option = document.createElement('option');
+                option.value = "Кабинет №" + i;
+                option.text = "Кабинет №" + i;
+                selectNumber.appendChild(option);
+            }
+        } 
+        else if (selectedType === 'Фикс') {
+            blockNumber.style.display = 'block';
+            labelNumber.innerText = "Номер стола";
+            for (let i = 1; i <= 20; i++) {
+                const option = document.createElement('option');
+                option.value = "Стол №" + i;
+                option.text = "Стол №" + i;
+                selectNumber.appendChild(option);
+            }
+        }
+        calculatePrice();
+    }
+
+    function calculatePrice() {
+        let baseHour = 10;
+        if (typeSelect.value === 'Офис') baseHour = 25;
+
+        const selectedOption = equipSelect.options[equipSelect.selectedIndex];
+        const extraCharge = parseFloat(selectedOption.getAttribute('data-extra')) || 0;
+
+        const totalHour = baseHour + extraCharge;
+        const totalDay = totalHour * 8;
+
+        priceDisplay.innerHTML = "Итоговая стоимость: " + totalHour.toFixed(2) + " BYN / час (" + totalDay.toFixed(2) + " BYN / день)";
+        priceHidden.value = totalHour;
+    }
+
+    typeSelect.addEventListener('change', updateNumbersAndVisibility);
+    equipSelect.addEventListener('change', calculatePrice);
+    
+    updateNumbersAndVisibility();
+</script>

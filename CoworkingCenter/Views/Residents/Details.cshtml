@@ -1,0 +1,18 @@
+@model CoworkingCenter.Models.Resident
+
+<h2>Статистическая карточка резидента</h2>
+<hr />
+
+<div class="card p-4 bg-light">
+    <h4>@Model.Name</h4>
+    <p><strong>Контакты:</strong> @Model.Contacts</p>
+    <p><strong>Текущий абонемент:</strong> @Model.Tariff (до @Model.TariffEndDate.ToString("dd.MM.yyyy"))</p>
+    
+    <div class="alert alert-success mt-3 col-md-6">
+        <h5 class="mb-0">📊 Суммарное время аренды: <strong>@ViewBag.TotalHours.ToString("F1") ч.</strong></h5>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/Residents" class="btn btn-secondary">Назад к списку</a>
+</div>

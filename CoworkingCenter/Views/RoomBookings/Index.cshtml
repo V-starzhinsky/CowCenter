@@ -1,0 +1,68 @@
+@model IEnumerable<CoworkingCenter.Models.MeetingRoomBooking>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Переговорные комнаты</h2>
+    <a href="/RoomBookings/Create" class="btn btn-primary">Забронировать комнату</a>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+    <tr>
+        <th> № Комнаты</th>
+        <th>Резидент</th>
+        <th>Дата</th>
+        <th>Время начала</th>
+        <th>Время окончания</th>
+        <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <!-- Номер комнаты -->
+            <td class="ps-4 fw-semibold">
+                <span class="badge bg-dark">Комната №@item.MeetingRoomId</span>
+            </td>
+            
+            <!-- СТОЛБЕЦ РЕЗИДЕНТА (ВЫВОДИМ СЛОВАМИ ИМЯ): -->
+            <td class="fw-bold text-primary">
+                @if (item.Resident != null)
+                {
+                    <!-- Если связь сработала, выводим текстовое имя из таблицы Residents -->
+                    @item.Resident.Name
+                }
+                else
+                {
+                    <!-- Запасной вариант на случай кэша: пишем словами тип и ID -->
+                    <span class="text-secondary">Посетитель (ID: @item.ResidentId)</span>
+                }
+            </td>
+            
+            <td>@item.Date.ToString("dd.MM.yyyy")</td>
+            <td class="font-monospace">@item.StartTime.ToString(@"hh\:mm")</td>
+            <td class="font-monospace">@item.EndTime.ToString(@"hh\:mm")</td>
+            
+            <td class="text-end pe-4">
+                <a href="/RoomBookings/Delete/@item.Id" class="btn btn-danger btn-sm" onclick="return confirm('Отменить бронирование комнаты?')">❌ Отменить</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+<!-- Блок переключения страниц для Бронирований переговорок -->
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination" style="display: flex; list-style: none; gap: 5px;">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li><a href="/RoomBookings?page=@(ViewBag.CurrentPage - 1)" class="btn btn-secondary btn-sm">◀ Назад</a></li>
+            }
+            <li class="btn btn-light btn-sm disabled fw-bold">Страница @ViewBag.CurrentPage из @ViewBag.TotalPages</li>
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <li><a href="/RoomBookings?page=@(ViewBag.CurrentPage + 1)" class="btn btn-primary btn-sm">Вперед ▶</a></li>
+            }
+        </ul>
+    </nav>
+</div>

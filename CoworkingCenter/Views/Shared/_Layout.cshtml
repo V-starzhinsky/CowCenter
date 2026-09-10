@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Коворкинг-центр — Курсовой проект</title>
+    <!-- Полная рабочая ссылка на стили Bootstrap -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+</head>
+<body class="bg-light">
+<header>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">"Коворкинг-центр"</a>
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/Residents">Резиденты</a>
+                    </li>
+                    <!--<li class="nav-item">
+                        <a class="nav-link text-white" href="/Residents/Active"> Активные тарифы</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/Workplaces">Рабочие места</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/RoomBookings">Переговорные комнаты</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/Payments"> Учет оплат</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/Bookings"> История бронирований</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="container bg-white p-4 rounded shadow-sm">
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+</div>
+
+<footer class="footer text-muted text-center mt-5 py-3 bg-dark text-white-50">
+    <div class="container">
+        &copy; 2026 — Курсовой проект: Старжинский В. М. ЗИТ-31 — ГГТУ им. П.О. Сухого
+    </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,46 @@
+@model IEnumerable<CoworkingCenter.Models.Payment>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-dark fw-bold">💰 Журнал учета оплат и доходов</h2>
+    <div class="text-secondary fw-semibold">
+        Всего проведено платежей: <span class="badge bg-dark font-monospace">@Model.Count()</span>
+    </div>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="card text-center p-5 bg-white border-0 shadow-sm rounded-3">
+        <div class="card-body">
+            <h4 class="text-muted mb-3">Платежей пока не поступало</h4>
+            <p class="text-secondary mb-0">При создании новых комплексных бронирований чеки будут автоматически выписываться сюда.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover table-striped align-middle mb-0 bg-white">
+            <thead class="table-dark">
+            <tr>
+                <th class="ps-4">ID Чека</th>
+                <th>Дата платежа</th>
+                <th>Сумма (BYN)</th>
+                <th>Содержание оказанной услуги</th>
+                <th class="pe-4">ID Клиента</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="ps-4 text-secondary font-monospace">#@item.Id</td>
+                    <td>@item.Date.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td class="fw-bold text-success">@item.Amount.ToString("F2") BYN</td>
+                    <td class="text-dark small">@item.Service</td>
+                    <td><span class="badge bg-secondary">ID: @item.ResidentId</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

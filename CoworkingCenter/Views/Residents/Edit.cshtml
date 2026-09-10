@@ -1,0 +1,42 @@
+@model CoworkingCenter.Models.Resident
+
+<h2 class="text-dark fw-bold">✏️ Редактирование данных резидента</h2>
+<hr />
+
+<div class="card p-4 bg-white border-0 shadow-sm rounded-3 col-md-6">
+    <form action="/Residents/Edit" method="post">
+        
+        <!-- Скрытое поле, чтобы сервер знал, какой Id обновлять -->
+        <input type="hidden" name="Id" value="@Model?.Id" />
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">ФИО / Название компании</label>
+            <input name="Name" value="@Model?.Name" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Контакты</label>
+            <input name="Contacts" value="@Model?.Contacts" class="form-control" required />
+        </div>
+
+        <!-- ИСПРАВЛЕННЫЙ БЛОК: Используем asp-for для автоматического выбора тарифа -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Тарифный план (Абонемент)</label>
+            <select name="Tariff" asp-for="Tariff" class="form-control" required>
+                <option value="Базовый">Базовый тариф</option>
+                <option value="Стандарт">Стандартный тариф</option>
+                <option value="Безлимит">Безлимит (Все включено)</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Дата окончания тарифа</label>
+            <input name="TariffEndDate" type="date" value="@Model?.TariffEndDate.ToString("yyyy-MM-dd")" class="form-control" required />
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success px-4 me-2">Сохранить изменения</button>
+            <a href="/Residents" class="btn btn-secondary px-4">Отмена</a>
+        </div>
+    </form>
+</div>

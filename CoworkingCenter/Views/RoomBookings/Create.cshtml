@@ -1,0 +1,183 @@
+@model CoworkingCenter.Models.MeetingRoomBooking
+
+<h2 class="text-dark fw-bold">🚪 Бронирование переговорной комнаты</h2>
+<hr />
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @Html.ValidationSummary(true)
+    </div>
+}
+
+<div class="card p-4 bg-white border-0 shadow-sm rounded-3 col-md-8 mb-5">
+    <form action="/RoomBookings/Create" method="post" id="roomForm">
+        
+        <h4 class="text-primary mb-3">1. Выбор комнаты и оснащения</h4>
+
+        <!-- Выпадающий список комнат (10 комнат согласно регламенту) -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Выберите переговорную комнату</label>
+            <select name="MeetingRoomId" id="roomSelect" class="form-control" required>
+                <!-- 4 комнаты по 5 человек -->
+                <option value="1" data-base="15">Переговорная №1 (Вместимость: 5 чел.) [15 BYN/ч]</option>
+                <option value="2" data-base="15">Переговорная №2 (Вместимость: 5 чел.) [15 BYN/ч]</option>
+                <option value="3" data-base="15">Переговорная №3 (Вместимость: 5 чел.) [15 BYN/ч]</option>
+                <option value="4" data-base="15">Переговорная №4 (Вместимость: 5 чел.) [15 BYN/ч]</option>
+                <!-- 3 комнаты до 8 человек -->
+                <option value="5" data-base="25">Переговорная №5 (Вместимость: 8 чел.) [25 BYN/ч]</option>
+                <option value="6" data-base="25">Переговорная №6 (Вместимость: 8 чел.) [25 BYN/ч]</option>
+                <option value="7" data-base="25">Переговорная №7 (Вместимость: 8 чел.) [25 BYN/ч]</option>
+                <!-- 3 комнаты по 10 человек -->
+                <option value="8" data-base="35">Переговорная №8 (Вместимость: 10 чел.) [35 BYN/ч]</option>
+                <option value="9" data-base="35">Переговорная №9 (Вместимость: 10 чел.) [35 BYN/ч]</option>
+                <option value="10" data-base="35">Переговорная №10 (Вместимость: 10 чел.) [35 BYN/ч]</option>
+            </select>
+        </div>
+
+        <!-- 3 Варианта оснастки оборудованием -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Дополнительное оборудование</label>
+            <select id="equipmentSelect" class="form-control" required>
+                <option value="Стандарт" data-extra="0">Стандарт (Маркерная доска, Спикерфон) [+0 BYN]</option>
+                <option value="Медиа" data-extra="5">Медиа-комплект (Проектор, Экран, Кликер) [+5 BYN/ч]</option>
+                <option value="Премиум" data-extra="12">Премиум-конференц (ТВ 4К, Система видеосвязи, Звук 5.1) [+12 BYN/ч]</option>
+            </select>
+        </div>
+
+        <hr class="my-4" />
+        <h4 class="text-primary mb-3">2. Сведения о клиенте и времени визита</h4>
+
+        <!-- Выбор типа клиента -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Категория посетителя</label>
+            <select name="residentSelectionType" id="residentSelectionType" class="form-control" required>
+                <option value="1">Постоянный резидент (выбрать по ФИО)</option>
+                <option value="2">Частное лицо / Разовый визит</option>
+            </select>
+        </div>
+
+        <!-- Выпадающий список постоянных резидентов по ФИО -->
+        <div class="mb-3" id="existingResidentBlock">
+            <label class="form-label fw-semibold">Выберите резидента (ФИО)</label>
+            <select name="residentId" class="form-control">
+                @if (ViewBag.Residents != null)
+                {
+                    @foreach (var res in ViewBag.Residents)
+                    {
+                        <option value="@res.Id">@res.Name </option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- Поле для ввода ФИО разового частного лица -->
+        <div class="mb-3" id="temporaryResidentBlock" style="display: none;">
+            <label class="form-label fw-semibold">ФИО частного лица (Разовый клиент)</label>
+            <input name="temporaryName" class="form-control" placeholder="Укажите ФИО посетителя" />
+        </div>
+
+        <!-- Дата и Время -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Дата</label>
+                <input name="Date" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Время начала</label>
+                <input name="StartTime" id="timeStart" type="time" class="form-control" value="10:00" required />
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold">Время окончания</label>
+                <input name="EndTime" id="timeEnd" type="time" class="form-control" value="12:00" required />
+            </div>
+        </div>
+
+        <!-- Поле вывода автоматического расчета стоимости на лету -->
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Стоимость бронирования (Рассчитывается автоматически)</label>
+            <!-- Скрытое поле передает часовую ставку с учетом оборудования в C# -->
+            <input type="hidden" name="calculatedPrice" id="calculatedPriceHidden" value="15" />
+            <div class="alert alert-success py-2 fw-bold" id="priceDisplay" style="background-color: #d1e7dd; color: #0f5132; border-color: #badbcc;">
+                Расчет стоимости...
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary px-5 btn-lg">Проверить время и забронировать</button>
+            <a href="/RoomBookings" class="btn btn-secondary px-4 btn-lg">Назад</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const roomSelect = document.getElementById('roomSelect');
+    const equipSelect = document.getElementById('equipmentSelect');
+    const timeStart = document.getElementById('timeStart');
+    const timeEnd = document.getElementById('timeEnd');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const priceHidden = document.getElementById('calculatedPriceHidden');
+
+    const resTypeSelect = document.getElementById('residentSelectionType');
+    const existingBlock = document.getElementById('existingResidentBlock');
+    const tempBlock = document.getElementById('temporaryResidentBlock');
+
+    // Переключение отображения полей ввода резидентов (ФИО / Разовый)
+    resTypeSelect.addEventListener('change', function() {
+        if (resTypeSelect.value === '1') {
+            existingBlock.style.display = 'block';
+            tempBlock.style.display = 'none';
+        } else {
+            existingBlock.style.display = 'none';
+            tempBlock.style.display = 'block';
+        }
+    });
+
+    // Функция расчета стоимости «на лету»
+    function calculateRoomPrice() {
+        // Получаем базовую стоимость за комнату в зависимости от вместимости
+        const selectedRoom = roomSelect.options[roomSelect.selectedIndex];
+        const baseRate = parseFloat(selectedRoom.getAttribute('data-base')) || 15;
+
+        // Получаем наценку за выбранный тип оборудования
+        const selectedEquip = equipSelect.options[equipSelect.selectedIndex];
+        const extraCharge = parseFloat(selectedEquip.getAttribute('data-extra')) || 0;
+
+        // Итоговая ставка за ОДИН час
+        const pricePerHour = baseRate + extraCharge;
+
+        // Считаем количество часов по выбранному времени
+        const startStr = timeStart.value;
+        const endStr = timeEnd.value;
+        
+        let totalHours = 2; // значение по умолчанию, если время не заполнено полностью
+        if (startStr && endStr) {
+            const startParts = startStr.split(':');
+            const endParts = endStr.split(':');
+            const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+            const endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+            
+            if (endMinutes > startMinutes) {
+                totalHours = (endMinutes - startMinutes) / 60;
+            }
+        }
+
+        // Общая стоимость за сессию
+        const totalPrice = pricePerHour * totalHours;
+
+        // Вывод на экран без использования конфликтующих символов Razor
+        priceDisplay.innerHTML = "Тариф: " + pricePerHour.toFixed(2) + " BYN/час. Длительность: " + totalHours.toFixed(2) + " ч. Итого к оплате: " + totalPrice.toFixed(2) + " BYN";
+        
+        // Записываем итоговую часовую ставку в скрытое поле для передачи на сервер
+        priceHidden.value = pricePerHour;
+    }
+
+    // Вешаем слушатели изменений на все элементы формы
+    roomSelect.addEventListener('change', calculateRoomPrice);
+    equipSelect.addEventListener('change', calculateRoomPrice);
+    timeStart.addEventListener('change', calculateRoomPrice);
+    timeEnd.addEventListener('change', calculateRoomPrice);
+
+    // Рассчитываем первый раз при открытии формы
+    calculateRoomPrice();
+</script>

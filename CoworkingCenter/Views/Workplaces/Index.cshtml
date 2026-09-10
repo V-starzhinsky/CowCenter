@@ -1,0 +1,77 @@
+@model IEnumerable<CoworkingCenter.Models.Workplace>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-dark fw-bold">🖥️ Оформленные рабочие места и брони</h2>
+    <a href="/Workplaces/Create" class="btn btn-primary px-4 shadow-sm">+ Оформить новое место</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="card text-center p-5 bg-white border-0 shadow-sm rounded-3">
+        <div class="card-body">
+            <h4 class="text-muted mb-3">Список рабочих мест пуст</h4>
+            <p class="text-secondary mb-4">Нажмите кнопку выше, чтобы создать первое рабочее место и закрепить его за клиентом.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="table-responsive shadow-sm rounded-3">
+        <table class="table table-hover table-striped align-middle mb-0 bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">ID места</th>
+                    <th>Тип места</th>
+                    <th>Номер стола / кабинета</th>
+                    <th>Установленное оснащение</th>
+                    <th>Базовая цена</th>
+                    <th class="text-end pe-4">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4 text-secondary">#@item.Id</td>
+                        <td>
+                            @if (item.Type == "Офис")
+                            {
+                                <span class="badge bg-danger">🏢 Кабинет (Офис)</span>
+                            }
+                            else if (item.Type == "Фикс")
+                            {
+                                <span class="badge bg-primary">📌 Фиксированное</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">🔄 Флекс (Свободное)</span>
+                            }
+                        </td>
+                        <td class="fw-semibold">@item.TableNumber</td>
+                        <td class="text-secondary small">@item.Equipment</td>
+                        <td class="fw-bold">@item.Price.ToString("F2") BYN/ч</td>
+                        <td class="text-end pe-4">
+                            <a href="/Workplaces/Delete/@item.Id" class="btn btn-danger btn-sm" onclick="return confirm('Удалить это рабочее место?')">❌ Удалить</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+<!-- Блок переключения страниц для Рабочих мест -->
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination" style="display: flex; list-style: none; gap: 5px;">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li><a href="/Workplaces?page=@(ViewBag.CurrentPage - 1)" class="btn btn-secondary btn-sm">◀ Назад</a></li>
+            }
+            <li class="btn btn-light btn-sm disabled fw-bold">Страница @ViewBag.CurrentPage из @ViewBag.TotalPages</li>
+            @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+            {
+                <li><a href="/Workplaces?page=@(ViewBag.CurrentPage + 1)" class="btn btn-primary btn-sm">Вперед ▶</a></li>
+            }
+        </ul>
+    </nav>
+</div>
